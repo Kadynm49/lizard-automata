@@ -1,0 +1,10 @@
+.center {
+    margin: auto;
+    width: 70%;
+    padding: 10px;
+  }
+
+body {
+    text-align:center;
+    background-color:darkgray
+}
