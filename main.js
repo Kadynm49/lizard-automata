@@ -5,7 +5,7 @@
 // hexagons this way until we get a hexagon that is valid
 
 var hex_size = 30;
-var map_radius = 3;
+var map_radius = 2;
 var origin;
 var padding = 0;
 var intersections = [];
@@ -17,8 +17,27 @@ var grid = {}
 function generate() {
   seed = document.getElementById("seed").value;
   var rand = get_random_number_generator(seed);
-  //find_all_valid_patterns();
-  fill_grid(grid_type, rand);
+  var all_patterns = find_all_valid_patterns();
+  var pattern_index = rand(0, all_patterns.length);
+  rotate_valid_pattern(all_patterns, pattern_index);
+  setInterval(() => {
+    pattern_index = (pattern_index + 1) % all_patterns.length;
+    rotate_valid_pattern(all_patterns, pattern_index)
+  }, 4000);
+  // fill_grid(grid_type, rand);
+}
+
+function rotate_valid_pattern(all_patterns, pattern_index) {
+  var color_index = 0;
+  var pattern = all_patterns[pattern_index];
+  for (var q = -map_radius; q <= map_radius; q++) {
+    var r1 = max(-map_radius, -q - map_radius);
+    var r2 = min(map_radius, -q + map_radius);
+    for (var r = r1; r <= r2; r++) {
+      grid["" + q + r + (-q - r)] = pattern[color_index];
+      color_index++;
+    }
+  }
 }
 
 function makeArray(w, h, val) {
@@ -267,9 +286,59 @@ function is_edge_node(q, r) {
   return (q == -map_radius || q == map_radius || r == -map_radius || r == map_radius || (-q - r) == map_radius || (-q - r) == -map_radius);
 }
 
-// function find_all_valid_patterns() {
+function find_all_valid_patterns() {
+  // use permutations with replacement somehow to find all valid patterns
 
-// }
+  var value_options = [0, 1];
+  var node_count = 0;
+  for (var q = -map_radius; q <= map_radius; q++) {
+    var r1 = max(-map_radius, -q - map_radius);
+    var r2 = min(map_radius, -q + map_radius);
+    for (var r = r1; r <= r2; r++) {
+      node_count++;
+    }
+  }
+
+  var all_permutations = permutations(value_options, node_count);
+  var valid_patterns = [];
+  for (var i = 0; i < all_permutations.length; i++) {
+    var permutation = all_permutations[i];
+    var permutation_index = 0;
+    for (var q = -map_radius; q <= map_radius; q++) {
+      var r1 = max(-map_radius, -q - map_radius);
+      var r2 = min(map_radius, -q + map_radius);
+      for (var r = r1; r <= r2; r++) {
+        grid["" + q + r + (-q - r)] = permutation[permutation_index];
+        permutation_index++;
+      }
+    }
+    if (is_valid_pattern()) {
+      valid_patterns.push(permutation);
+    }
+  }
+  return valid_patterns;
+}
+
+/**
+ * Generates all permutations of an array, including duplicate
+ * character sequences, like "aaa", "aab", and so on.
+ */
+function permutations(array = [], len = array.length) {
+  let results = [];
+
+  const permute = (queue = []) => {
+    if (queue.length === len) {
+      results.push(queue);
+    } else {
+      for (let ele of array) {
+        permute(queue.concat(ele));
+      }
+    }
+  };
+
+  permute();
+  return results;
+};
 
 function pixel_to_hex(x, y) {
   q = ((x * sqrt(3)) / 3 - y / 3) / hex_size;
