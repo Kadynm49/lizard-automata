@@ -4,40 +4,36 @@
 // maybe could use seeded rand function to decide color of next hexagon, and brute force generate
 // hexagons this way until we get a hexagon that is valid
 
-var hex_size = 30;
-var map_radius = 2;
+var hex_size = 40;
+var map_radius = 3;
 var origin;
 var padding = 0;
 var intersections = [];
 var seed = "";
 var grid_type = "HEXAGON";
-var colors = [ [17, 191, 48], [0, 0, 0] ]; //17, 101, 48
+var colors = [ [1,126,247], [0, 0, 0] ]; //17, 101, 48 //1,126,247
 var grid = {}
 
 function generate() {
   seed = document.getElementById("seed").value;
   var rand = get_random_number_generator(seed);
+  //permutate_grid(rand);
+  fill_grid(grid_type, rand);
+  setInterval(() => {fill_grid(grid_type, rand)}, 3000);
+}
+
+function permutate_grid(rand) {
   var all_patterns = find_all_valid_patterns();
   var pattern_index = rand(0, all_patterns.length);
   rotate_valid_pattern(all_patterns, pattern_index);
   setInterval(() => {
     pattern_index = (pattern_index + 1) % all_patterns.length;
     rotate_valid_pattern(all_patterns, pattern_index)
-  }, 4000);
-  // fill_grid(grid_type, rand);
+  }, 2700);
 }
 
 function rotate_valid_pattern(all_patterns, pattern_index) {
-  var color_index = 0;
-  var pattern = all_patterns[pattern_index];
-  for (var q = -map_radius; q <= map_radius; q++) {
-    var r1 = max(-map_radius, -q - map_radius);
-    var r2 = min(map_radius, -q + map_radius);
-    for (var r = r1; r <= r2; r++) {
-      grid["" + q + r + (-q - r)] = pattern[color_index];
-      color_index++;
-    }
-  }
+  grid = all_patterns[pattern_index];
 }
 
 function makeArray(w, h, val) {
@@ -61,7 +57,7 @@ function setup() {
 }
 
 function draw() {
-  background(180,132,96);
+  background(253,225,213);
 	stroke(255);
 	strokeWeight(1);
 
@@ -313,11 +309,54 @@ function find_all_valid_patterns() {
       }
     }
     if (is_valid_pattern()) {
-      valid_patterns.push(permutation);
+      valid_patterns.push(Object.assign({}, grid));
     }
   }
   return valid_patterns;
 }
+
+// function find_all_valid_patterns() {
+//   var value_options = [];
+//   var node_count = 0;
+//   for (var q = -map_radius; q <= map_radius; q++) {
+//     var r1 = max(-map_radius, -q - map_radius);
+//     var r2 = min(map_radius, -q + map_radius);
+//     for (var r = r1; r <= r2; r++) {
+//       value_options.push([q, r, 0]);
+//       value_options.push([q, r, 1]);
+//       node_count++;
+//     }
+//   }
+
+//   var last_permutation_index = factorialize(value_options.length);
+//   var valid_patterns = [];
+//   for (var i = 0; i < last_permutation_index; i++) {
+//     var permutation = array_nth_permutation(value_options, i);
+//     remove_duplicates(permutation);
+//     for (var j = 0; j < node_count; j++) {
+//       grid["" + permutation[j][0] + permutation[j][1] + (-permutation[j][0] - permutation[j][1])] = permutation[j][2];
+//     }
+//     if (is_valid_pattern()) {
+//       valid_patterns.push(Object.assign({}, grid));
+//       if (valid_patterns.length > 100) {
+//         return valid_patterns;
+//       }
+//     }
+//   }
+//   return valid_patterns;
+// }
+
+// function remove_duplicates(permutation) {
+//   var duplicates = {};
+//   for (var i = 0; i < permutation.length; i++) {
+//     var node = [permutation[i][0],permutation[i][1]];
+//     if (duplicates[node] !== undefined) {
+//       duplicates[node] = 1;
+//     } else {
+//       permutation.splice(i, 1);
+//     }
+//   }
+// }
 
 /**
  * Generates all permutations of an array, including duplicate
@@ -339,6 +378,44 @@ function permutations(array = [], len = array.length) {
   permute();
   return results;
 };
+
+function factorialize(num) {
+  for (f = i = 1; i <= num; i++)
+    f *= i;
+    return f;
+}
+
+// non recursive permutations to save memory
+function array_nth_permutation(a, n) {
+  var b = a.slice();  // copy of the set
+  var len = a.length; // length of the set
+  var res;            // return value, undefined
+  var i, f;
+
+  // compute f = factorial(len)
+  for (f = i = 1; i <= len; i++)
+      f *= i;
+
+  // if the permutation number is within range
+  if (n >= 0 && n < f) {
+      // start with the empty set, loop for len elements
+      for (res = []; len > 0; len--) {
+          // determine the next element:
+          // there are f/len subsets for each possible element,
+          f /= len;
+          // a simple division gives the leading element index
+          i = Math.floor(n / f);
+          // alternately: i = (n - n % f) / f;
+          res.push(b.splice(i, 1)[0]);
+          // reduce n for the remaining subset:
+          // compute the remainder of the above division
+          n %= f;
+          // extract the i-th element from b and push it at the end of res
+      }
+  }
+  // return the permutated set or undefined if n is out of range
+  return res;
+}
 
 function pixel_to_hex(x, y) {
   q = ((x * sqrt(3)) / 3 - y / 3) / hex_size;
