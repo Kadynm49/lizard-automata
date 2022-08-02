@@ -1,8 +1,4 @@
 // template code borrowed from https://editor.p5js.org/Rito/sketches/BJ5D_KeTg
-// tattoo deciding seed should be "Kadyn Zachary James Marshall"
-
-// maybe could use seeded rand function to decide color of next hexagon, and brute force generate
-// hexagons this way until we get a hexagon that is valid
 
 var hex_size = 40;
 var map_radius = 3;
@@ -14,22 +10,73 @@ var grid_type = "HEXAGON";
 var colors = [ [1,126,247], [0, 0, 0] ]; //17, 101, 48 //1,126,247
 var grid = {}
 
+var potential_winner = {
+  "-303": 1,
+  "-312": 0,
+  "-321": 0,
+  "-330": 1,
+  "-2-13": 0,
+  "-202": 0,
+  "-211": 1,
+  "-220": 1,
+  "-23-1": 0,
+  "-1-23": 1,
+  "-1-12": 1,
+  "-101": 1,
+  "-110": 1,
+  "-12-1": 0,
+  "-13-2": 1,
+  "0-33": 0,
+  "0-22": 1,
+  "0-11": 0,
+  "000": 0,
+  "01-1": 0,
+  "02-2": 1,
+  "03-3": 0,
+  "1-32": 1,
+  "1-21": 0,
+  "1-10": 1,
+  "10-1": 1,
+  "11-2": 1,
+  "12-3": 1,
+  "2-31": 0,
+  "2-20": 1,
+  "2-1-1": 1,
+  "20-2": 0,
+  "21-3": 0,
+  "3-30": 1,
+  "3-2-1": 0,
+  "3-1-2": 0,
+  "30-3": 1
+};
+
 function generate() {
   seed = document.getElementById("seed").value;
   var rand = get_random_number_generator(seed);
-  //permutate_grid(rand);
+
+  // show winning pattern
+  //grid = potential_winner;
+
+  // fill randomly and fix neighbors until valid
+  generate_valid_patterns(rand);
+
+  // permutations and validate
+  //generate_valid_patterns_v2(rand);
+}
+
+function generate_valid_patterns(rand) {
   fill_grid(grid_type, rand);
   setInterval(() => {fill_grid(grid_type, rand)}, 3000);
 }
 
-function permutate_grid(rand) {
+function generate_valid_patterns_v2(rand) {
   var all_patterns = find_all_valid_patterns();
   var pattern_index = rand(0, all_patterns.length);
   rotate_valid_pattern(all_patterns, pattern_index);
   setInterval(() => {
     pattern_index = (pattern_index + 1) % all_patterns.length;
     rotate_valid_pattern(all_patterns, pattern_index)
-  }, 2700);
+  }, 3000);
 }
 
 function rotate_valid_pattern(all_patterns, pattern_index) {
@@ -57,7 +104,7 @@ function setup() {
 }
 
 function draw() {
-  background(253,225,213);
+  background(255,255,255);
 	stroke(255);
 	strokeWeight(1);
 
@@ -67,7 +114,7 @@ function draw() {
 				var r1 = max(-map_radius, -q - map_radius);
 				var r2 = min(map_radius, -q + map_radius);
 				for (var r = r1; r <= r2; r++) {
-					draw_hexagon(hex_to_pixel(q, r), hex_size, q, r);
+					draw_scales(hex_to_pixel(q, r), hex_size, q, r);
 				}
 		}
 	}
@@ -431,7 +478,7 @@ function hex_to_pixel(q, r) {
   return createVector(x + origin.x, y + origin.y);
 }
 
-function draw_hexagon(center, size, q, r, drawCities = true) {
+function draw_scales(center, size, q, r, drawCities = true) {
   points = [];
 	for(var i = 0; i < 6; i++){
 		points.push(hex_corner(center, size - padding, i));
@@ -446,10 +493,10 @@ function draw_hexagon(center, size, q, r, drawCities = true) {
       fill(colors[grid["" + q + r + (-q - r)]]);
       stroke(colors[grid["" + q + r + (-q - r)]]);
     } else {
-      fill(0,200,0);
-      stroke(0,200,0);
+      fill(0,0,0);
+      stroke(0,0,0);
     }
-    circle(center.x, center.y, size + (size / 2.5));
+    circle(center.x, center.y, size + (size / 1.9));
 		// point(points[i % 6].x, points[i % 6].y);
 		// vertex(points[i % 6].x, points[i % 6].y);
 		// line(points[i-1].x, points[i-1].y, points[i % 6].x, points[i % 6].y);
