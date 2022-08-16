@@ -10,7 +10,7 @@ var grid_type = "HEXAGON";
 var colors = [ [1,126,247], [0, 0, 0] ]; //17, 101, 48 //1,126,247
 var grid = {}
 
-var potential_winner = {
+var winner = {
   "-303": 1,
   "-312": 0,
   "-321": 0,
@@ -54,14 +54,15 @@ function generate() {
   seed = document.getElementById("seed").value;
   var rand = get_random_number_generator(seed);
 
-  // show winning pattern
-  //grid = potential_winner;
-
   // fill randomly and fix neighbors until valid
   generate_valid_patterns(rand);
 
   // permutations and validate
   //generate_valid_patterns_v2(rand);
+}
+
+function show_winner() {
+  grid = winner;
 }
 
 function generate_valid_patterns(rand) {
@@ -96,6 +97,7 @@ function makeArray(w, h, val) {
 
 function setup() {
   document.getElementById("go").onclick = generate;
+  document.getElementById("winner").onclick = show_winner;
   document.getElementById("seed").value = Date.now();
   createCanvas(1000, 1000);
   angleMode(RADIANS);
